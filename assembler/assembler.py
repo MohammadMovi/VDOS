@@ -15,28 +15,41 @@ variable_table = {
 
 
 def assemble_line(line):
-      line = line.strip().split(";")[0]  # حذف کامنت
-      if not line:
-            return None
-      parts = line.split()
-      instr = parts[0].upper()
-      arg = parts[1] if len(parts) > 1 else "00"
-    
-      op = opcode_table.get(instr)
-      if op is None:
-        raise ValueError(f"Unknown instruction: {instr}")
-      
-      if instr == "STORE":
-          operand = variable_table.get(arg.upper(), "FF")
-      elif instr == "HALT":
-          operand = "00"
-      else:
-          operand = f"{int(arg):02X}"
+    line = line.split(";", 1)[0].strip()
+    if not line:
+        return None
 
-      return f"{op} {operand}"    
+    parts = line.split()
+    instr = parts[0].upper()
+    op = opcode_table.get(instr)
+    if op is None:
+        raise ValueError(f"Unknown instruction: {instr}")
+
+    if instr == "HALT":
+        if len(parts) != 1:
+            raise ValueError("HALT does not take an operand")
+        operand = "00"
+    else:
+        if len(parts) != 2:
+            raise ValueError(f"{instr} requires exactly one operand")
+        arg = parts[1]
+        if instr == "STORE":
+            operand = variable_table.get(arg.upper())
+            if operand is None:
+                raise ValueError(f"Unknown STORE target: {arg}")
+        else:
+            try:
+                value = int(arg, 10)
+            except ValueError as exc:
+                raise ValueError(f"{instr} operand must be a decimal integer") from exc
+            if not 0 <= value <= 0xFF:
+                raise ValueError(f"{instr} operand must be between 0 and 255")
+            operand = f"{value:02X}"
+
+    return f"{op} {operand}"
 
 def assemble_file(file_path):
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     bytecode = []
