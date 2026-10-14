@@ -9,6 +9,20 @@ VDOS is a learning project exploring a small bytecode assembler and virtual mach
 - keyboard_shell/: keyboard input and echo example
 - command_shell/: command-shell example
 
+## How the pieces fit together
+
+The repository contains two separate learning tracks: a Python bytecode VM and small bootable assembly examples.
+
+```mermaid
+flowchart TD
+    A[example.asm] --> B[assembler.py]
+    B --> C[program.vdos]
+    C --> D[vm.py]
+    E[boot.asm or shell.asm] --> F[NASM]
+    F --> G[Boot image]
+    G --> H[QEMU]
+```
+
 ## Requirements
 
 - Python 3 for the assembler and VM
